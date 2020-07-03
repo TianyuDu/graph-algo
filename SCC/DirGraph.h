@@ -19,30 +19,29 @@ class DirGraph {
 
     DirGraph() {};
     DirGraph(vector< pair<int, int> > edges) {
-      this -> edgeList = edges;
-      // this -> adjList;
+      this->edgeList = edges;
 
       unordered_map<int, int> counts;
       for (auto e : edgeList) {
         counts[e.first] = 1;
         counts[e.second] = 1;
-        if (adjList.count(e.first) > 0) {
-          adjList.at(e.first).push_back(e.second);
+        if (this->adjList.count(e.first) > 0) {
+          this->adjList.at(e.first).push_back(e.second);
         } else {
           vector<int> init;
           init.push_back(e.second);
-          adjList[e.first] = vector<int> {e.second};
+          this->adjList[e.first] = init;
         }
       }
 
-    this -> Vertices.reserve(counts.size());
+    this->Vertices.reserve(counts.size());
 
     for (auto kv : counts) {
-      this -> Vertices.push_back(kv.first);
+      this->Vertices.push_back(kv.first);
     }
 
-    this -> n = this -> Vertices.size();
-    this -> m = this -> edgeList.size();
+    this->n = this->Vertices.size();
+    this->m = this->edgeList.size();
 
   }
 
@@ -58,7 +57,7 @@ class DirGraph {
 
     void printEdges() {
       int c = 0;
-      for (pair<int, int> e : this -> edgeList) {
+      for (pair<int, int> e : this->edgeList) {
         cout << e.first << "->" << e.second << std::endl;
         c ++;
         if (c >= 20) {break;}

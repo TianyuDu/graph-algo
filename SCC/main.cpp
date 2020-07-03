@@ -1,9 +1,13 @@
+/*
+Kosaraju 's two pass algorithm to detect strongly connected components in directed graph.
+
+Date: Jul 3, 2020
+*/
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <vector>
 #include <utility>
-#include <map>
 #include <stack>
 #include <algorithm>
 
@@ -11,22 +15,16 @@
 
 using namespace std;
 
-vector< pair<int, int> > loadData(string fileDir);
 
-void firstPassDFSLoop(DirGraph* g);
-void firstPassDFS(DirGraph* g, int s);
+// ==== Global Variables =====
+// int t;  // Current time step, used to track finishing time in the first pass of DFS.
+int s;  // Current leading nodes, used in the second pass of DFS.
+unordered_map <int, bool> explored;  // Record which nodes has been explored.
 
-void secondPassDFSLoop(DirGraph* g);
-void secondPassDFS(DirGraph* g, int s);
+stack<int> finishTimeStack;  // Finish time each nodes in the first pass of DFS.
+unordered_map <int, int> leader;  // node leader[i] leads to the first discovery of node i.
 
-
-// Global Variables.
-int t;
-int s;
-unordered_map <int, bool> explored;
-
-stack<int> finishTimeStack;
-unordered_map <int, int> leader;
+// ============================
 
 vector< pair<int, int> > loadData(string fileDir) {
   vector< pair<int, int> > edgeList;
@@ -34,7 +32,6 @@ vector< pair<int, int> > loadData(string fileDir) {
 
   int a, b;
   while (infile >> a >> b) {
-    // std::cout << a << "->" << b << std::endl;
     pair<int, int> pair(a, b);
     edgeList.push_back(pair);
   }
@@ -48,32 +45,36 @@ void DFS(DirGraph* g, int i, int pass) {
   // Mark this node as explored.
   explored.at(i) = true;  
 
+  // In the second pass of DFS, s leads to the discovery of i.
   if (pass == 2) {
     leader.at(i) = s;
   }
 
   // Explore unexplored neighbors of s
-  for (int w : g -> adjList[i]) {
+  for (int w : g->adjList[i]) {
     if (!explored.at(w)) {
       DFS(g, w, pass);
     }
   }
 
   if (pass == 1) {
-    // For the first run only, record the finish time.
+    // In the first pass of DFS, record the finihsing time of node i.
     finishTimeStack.push(i);
   }
 }
 
 
 void FirstDFSLoop(DirGraph* g) {
+  // g here should be the reversed graph.
+
   // Initialize global trackers. 
-  for (int v = 1;  v <= g -> n; v++) {
+  // Nodes are labelled from 1 to g->n.
+  for (int v = 1;  v <= g->n; v++) {
     explored[v] = false;
   }
 
-  for (int v = 1;  v <= g -> n; v++) {
-    // cout << v << endl;
+  // The exploring order does not matter in the first pass.
+  for (int v = 1;  v <= g->n; v++) {
     if (!explored.at(v)) {
       DFS(g, v, 1);
     }
@@ -83,25 +84,27 @@ void FirstDFSLoop(DirGraph* g) {
 
 void SecondDFSLoop(DirGraph* g) {
   // Initialize global trackers. 
-  for (int v = 1;  v <= g -> n; v++) {
+  for (int v = 1;  v <= g->n; v++) {
     explored[v] = false;
     leader[v] = -1;
   }
+  s = -1; // Set curent leader to -1. NULL also works.
 
-  s = 0;
-
-  // Go through vertices by decreasing order.
+  // Go through nodes by decreasing finish time in the first pass of DFS.
   while (!finishTimeStack.empty()) {
-    auto v = finishTimeStack.top();
+    int v = finishTimeStack.top();
     finishTimeStack.pop();
     if (!explored.at(v)) {
       // set the global tracker of leader.
+      // node s leads to the discovery of all nodes (include itself)
+      // explored in this call of DFS.
       s = v;
       DFS(g, v, 2);
     }
   }
 }
 
+// For sorting vectors.
 bool wayToSort(int i, int j) { return i > j; }
 
 int main() {
@@ -111,11 +114,11 @@ int main() {
   cout << "Creating the graph" << endl;
   DirGraph* g = new DirGraph(edgeList);
 
-  cout << "m = " << g -> m << endl;
-  cout << "n = " << g -> n << endl; 
+  cout << "m = " << g->m << endl;
+  cout << "n = " << g->n << endl; 
 
   cout << "Creating the reversed graph" << endl;
-  DirGraph* gRev = g -> getReverseGraph();
+  DirGraph* gRev = g->getReverseGraph();
 
   cout << "Running the first pass of DFS" << endl;
   FirstDFSLoop(gRev);
@@ -123,36 +126,30 @@ int main() {
   cout << "Running the second pass of DFS" << endl;
   SecondDFSLoop(g);
 
-  // for (auto kv : f) {
-  //   cout << "f(" << kv.first << ")=" << kv.second << endl;
-  // }
-
-  // for (auto kv : l) {
-  //   cout << "leader(" << kv.first << ")=" << kv.second << endl;
-  // }
-
   cout << "Sorting results" << endl;
-  unordered_map<int, int> SCC_counters;
+  unordered_map<int, int> sccCounters;
 
+
+  // Compute the size of the component leading by each leader.
   for (auto kv : leader) {
-    // cout << "leader (" << kv.first << ") is " << kv.second << endl;
-    if (SCC_counters.count(kv.second) > 0) {
-      SCC_counters[kv.second] ++;
+    if (sccCounters.count(kv.second) > 0) {
+      sccCounters[kv.second] ++;
     } else {
-      SCC_counters[kv.second] = 1;
+      sccCounters[kv.second] = 1;
     }
   }
 
-  vector<int> SCCs;
-  for (auto kv : SCC_counters) {
-    // Size, component lead
-    SCCs.push_back(kv.second);
+  // Record the size of components.
+  vector<int> sccSizes;
+  for (auto kv : sccCounters) {
+    sccSizes.push_back(kv.second);
   }
 
-  sort(SCCs.begin(), SCCs.end(), wayToSort);
+  sort(sccSizes.begin(), sccSizes.end(), wayToSort);
 
+  // Report the size of the five largest components.
   int z = 0;
-  for (int size : SCCs) {
+  for (int size : sccSizes) {
     cout << "Component size = " << size << endl;
     z ++;
     if (z > 5) {break;}

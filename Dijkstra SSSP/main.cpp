@@ -13,6 +13,15 @@ using namespace boost::assign;
 
 
 typedef map< int, vector< pair<int, int> > > adjacentListGraph;
+/*
+    Data format:
+    Let G be an adjacentListGraph,
+    for vertex v (represetned as an integer),
+    G.at(v) returns the adjacent list (as a vector) of vertex v.
+    Each element p of vector G.at(v) is a pair of integers,
+    in which the first element is the tail vertex of this edge (v -> p.first)
+    the second integer is the length (weight) of this edge.
+*/
 
 adjacentListGraph loadData() {
     ifstream file("./dijkstra data.txt");

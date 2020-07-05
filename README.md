@@ -1,1 +1,1 @@
-# C++ Implementations of Algorithms on Graphs and Networks
+# C++ Implementations of Algorithms

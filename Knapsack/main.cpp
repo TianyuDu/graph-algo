@@ -1,6 +1,6 @@
 #include <iostream>
-#include <ftream>
-#include <utilities>
+#include <fstream>
+#include <utility>
 #include<vector>
 
 using namespace std;
@@ -24,22 +24,26 @@ You can assume that all numbers are positive. You should assume that item weight
 int totalWeight, numItems;
 
 vector< pair<int, int> > loadData(string fileDir) {
-    vector< pair<int, int> > edgeList;
+    vector< pair<int, int> > data;
     ifstream infile(fileDir);
 
     infile >> totalWeight >> numItems;
 
     int value, weight;
-    while (infile >> a >> b) {
-        pair<int, int> pair(a, b);
-        edgeList.push_back(pair);
+    while (infile >> value >> weight) {
+        pair<int, int> pair(value, weight);
+        data.push_back(pair);
     }
+    return data;
 }
 
 int maximumValue(const vector< pair<int, int> > Pairs) {
-    
+    throw exception("NotImplemented");
 }
 
 int main() {
+    auto data = loadData("./knapsack_small.txt");
+    cout << "Total weight = " << totalWeight << endl;
+    cout << "Number of items = " << numItems << endl;
     return 0;
 }

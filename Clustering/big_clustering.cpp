@@ -17,6 +17,9 @@ The question is: what is the largest value of kk such that there is a kk-cluster
 
 NOTE: The graph implicitly defined by the data file is so big that you probably can't write it out explicitly, let alone sort the edges by cost. So you will have to be a little creative to complete this part of the question. For example, is there some way you can identify the smallest distances without explicitly looking at every pair of nodes?
 
+MAIN IDEA:
+    For every pair of nodes (p, q), merge them into the same clusters if and only if d(p, q) <= 2 and there is no p-q path before.
+    Use union-find data structure to track clusters efficiently.
 */
 #include <iostream>
 #include <fstream>

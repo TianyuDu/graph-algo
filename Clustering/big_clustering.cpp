@@ -44,19 +44,14 @@ map< int, vector<int> > loadData() {
 
     vector<int> nodeValues;
     while (getline(file, line)) {
-        // stringstream L(line);
-        // vector<bool> nodeInfo;
-        // while (getline(L, value, ' ')) {
-        //     nodeInfo.push_back(stoi(value));
-        // }
-        // cout << line << endl;
-        erase_all(line, " "); 
-        // cout << line << endl;
+        // Convert to binary string.
+        erase_all(line, " ");
+        // Convert to decimal representations.
         int v = stoi(line, nullptr, 2);
-        // data.push_back(nodeInfo);
         nodeValues.push_back(v);
     }
-
+    // key: value of nodes.
+    // value: set of nodes with values = key.
     map< int, vector<int> > valueToNodes;
     for (int i = 0; i < numNodes; i++) {
         int v = nodeValues[i];
@@ -70,11 +65,15 @@ map< int, vector<int> > loadData() {
 }
 
 set<int> getBitMaps() {
-    set<int> M; // Shift masks.
+    // Create a set of bit masks.
+    set<int> M;
+    // All Hamming distance = 1 pairs of nodes.
+    // Only 1 out of 24 bits flipped.
     for (int i = 0; i < numBits; i ++) {
         M.insert(pow(2, i));
     }
-
+    // All Hamming distance = 2 pairs of nodes.
+    // 2 out of 24 bits flipped.
     for (int i = 0; i < numBits; i ++) {
         for (int j = 0; j < numBits; j ++) {
             if (i != j) {
@@ -100,15 +99,18 @@ int main() {
         elements.insert(i);
     }
 
-    // Initialize the disjoint set.
+    // Initialize the disjoint set of nodes.
+    // There are numNode clusters initially.
     cout << ds.count_sets(elements.begin(), elements.end()) << endl;
     cout << data.size() << endl;
     // Union all elements with the same representations.
     for (auto kv : data) {
+        // for each (value, list of nodes) pair.
         int value = kv.first;
         vector<int> nodeList = kv.second;
-        int node0 = nodeList[0];
+        int node0 = nodeList[0];  // take the leading node as the leader.
         for (auto iter = nodeList.begin() + 1; iter != nodeList.end(); iter++) {
+            // union everything with the same value (Hamming distance = 0) together.
             int node1 = *iter;
             ds.union_set(node0, node1);
         }
@@ -118,14 +120,14 @@ int main() {
 
     auto M = getBitMaps();
     cout << "Number of bitshifts = " << M.size() << endl;
-    int counter = 0;
     for (int s : M) {
-        cout << counter << endl;
-        counter ++;
         for (auto kv : data) {
             int value = kv.first;
             int node1 = kv.second[0];
-            int shiftedValue = value ^ s;  // Take XOR.
+            int shiftedValue = value ^ s;  // Take XOR, i.e., bit-wise shift whenever ont particular bit in the bit mask is 1.
+            // Leave unchanged if the corresponding bit in the bit mask is zero.
+            // If there are other nodes with the same value as the shifted value, these nodes have Hamming distance of either 1 or 2
+            // from node1, union those nodes with node1.
             if (data.count(shiftedValue) > 0) {
                 int node2 = data.at(shiftedValue)[0];
                 ds.union_set(node1, node2);
